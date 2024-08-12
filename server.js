@@ -1,5 +1,5 @@
-const express = require("express");
 const mysql = require("mysql");
+const express = require("express");
 const cors = require("cors");
 
 const app = express();
@@ -13,15 +13,26 @@ const db = mysql.createConnection({
   database: "takeuforward",
 });
 
-app.get("/", (re, res) => {
+db.connect((err) => {
+  if (err) {
+    console.error("Error connecting to the database:", err.stack);
+    return;
+  }
+  console.log("Connected to the database as ID " + db.threadId);
+});
+
+app.get("/", (req, res) => {
   return res.json("Hola Amigo!");
 });
 
-app.get("/bannerInfo", (re, res) => {
+app.get("/bannerInfo", (req, res) => {
   const sql =
     "SELECT * from banner where id='f44b09b1-580e-11ef-9ffe-902e16f011ee'";
   db.query(sql, (err, data) => {
-    if (err) return res.json(err);
+    if (err) {
+      console.error("Error executing query:", err);
+      return res.status(500).json({ message: "Error retrieving banner info", error: err });
+    }
     return res.json(data);
   });
 });
@@ -53,7 +64,7 @@ const processingBannerUpdateRequest = (
 app.post("/updateBannerInfo", (req, res) => {
   const { userId, description, timer, visible, link } = req.body;
 
-  if (!userId || !description || !timer || !visible || !link) {
+  if (!userId || !description || !timer || !link) {
     return res.status(400).json({ message: "Missing required fields" }); // TODO: need to specify the missing field
   }
   const processedRequest = processingBannerUpdateRequest(
@@ -66,7 +77,7 @@ app.post("/updateBannerInfo", (req, res) => {
 
   const sql =
     "UPDATE banner SET visibility = ?, redirect_link = ?, description = ?, timer = ? WHERE user_id = ?";
-    
+
   db.query(
     sql,
     [
@@ -79,9 +90,7 @@ app.post("/updateBannerInfo", (req, res) => {
     (err, result) => {
       if (err) {
         console.error("Error updating banner:", err);
-        return res
-          .status(500)
-          .json({ message: "Error updating banner", error: err });
+        return res.status(500).json({ message: "Error updating banner", error: err });
       }
 
       if (result.affectedRows === 0) {
@@ -93,6 +102,6 @@ app.post("/updateBannerInfo", (req, res) => {
   );
 });
 
-app.listen(8081, () => {
-  console.log("listening");
+app.listen(8080, () => {
+  console.log("listening on port 8080");
 });
