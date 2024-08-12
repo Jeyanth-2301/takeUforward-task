@@ -1,5 +1,5 @@
-const mysql = require("mysql");
 const express = require("express");
+const mysql = require("mysql");
 const cors = require("cors");
 
 const app = express();
@@ -13,26 +13,15 @@ const db = mysql.createConnection({
   database: "takeuforward",
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error("Error connecting to the database:", err.stack);
-    return;
-  }
-  console.log("Connected to the database as ID " + db.threadId);
-});
-
-app.get("/", (req, res) => {
+app.get("/", (re, res) => {
   return res.json("Hola Amigo!");
 });
 
-app.get("/bannerInfo", (req, res) => {
+app.get("/bannerInfo", (re, res) => {
   const sql =
     "SELECT * from banner where id='f44b09b1-580e-11ef-9ffe-902e16f011ee'";
   db.query(sql, (err, data) => {
-    if (err) {
-      console.error("Error executing query:", err);
-      return res.status(500).json({ message: "Error retrieving banner info", error: err });
-    }
+    if (err) return res.json(err);
     return res.json(data);
   });
 });
@@ -77,7 +66,7 @@ app.post("/updateBannerInfo", (req, res) => {
 
   const sql =
     "UPDATE banner SET visibility = ?, redirect_link = ?, description = ?, timer = ? WHERE user_id = ?";
-
+    
   db.query(
     sql,
     [
@@ -90,7 +79,9 @@ app.post("/updateBannerInfo", (req, res) => {
     (err, result) => {
       if (err) {
         console.error("Error updating banner:", err);
-        return res.status(500).json({ message: "Error updating banner", error: err });
+        return res
+          .status(500)
+          .json({ message: "Error updating banner", error: err });
       }
 
       if (result.affectedRows === 0) {
@@ -102,6 +93,6 @@ app.post("/updateBannerInfo", (req, res) => {
   );
 });
 
-app.listen(8080, () => {
-  console.log("listening on port 8080");
+app.listen(8081, () => {
+  console.log("listening");
 });
